@@ -1,16 +1,16 @@
 package com.namtarr.aabinstaller.domain
 
 import com.namtarr.aabinstaller.domain.data.CommandRunner
-import com.namtarr.aabinstaller.domain.data.ServiceDiscovery
+import com.namtarr.aabinstaller.domain.data.Storage
 import com.namtarr.aabinstaller.model.Device
 
 class AdbService(
-    private val discovery: ServiceDiscovery,
+    private val storage: Storage,
     private val runner: CommandRunner
 ) {
 
     suspend fun getDevices(): List<Device> {
-        val adb = discovery.getAdbPath() ?: throw IllegalStateException("Adb is not found")
+        val adb = storage.getServiceSettings().adbPath ?: throw IllegalStateException("Adb is not found")
         val command = listOf(adb, DEVICES).joinToString(" ")
         val result = runner.run(command)
 

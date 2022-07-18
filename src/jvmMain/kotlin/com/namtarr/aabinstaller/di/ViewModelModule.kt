@@ -6,7 +6,7 @@ import com.namtarr.aabinstaller.view.signing.SigningViewModel
 import org.koin.dsl.module
 
 val viewModelModule = module {
-    factory { BuildViewModel(adbService = get(), bundleToolService = get(), signingManager = get()) }
-    factory { SettingsViewModel(serviceDiscovery = get()) }
-    factory { SigningViewModel() }
+    factory { BuildViewModel(adbService = get(), bundleToolService = get(), storage = get()) }
+    factory { SettingsViewModel(storage = get()) }
+    factory { SigningViewModel(storage = get()) }
 }

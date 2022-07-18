@@ -2,8 +2,9 @@ package com.namtarr.aabinstaller.data
 
 import com.namtarr.aabinstaller.domain.BundleToolService
 import com.namtarr.aabinstaller.domain.data.CommandRunner
-import com.namtarr.aabinstaller.domain.data.ServiceDiscovery
+import com.namtarr.aabinstaller.domain.data.Storage
 import com.namtarr.aabinstaller.model.Device
+import com.namtarr.aabinstaller.model.Settings
 import com.namtarr.aabinstaller.model.SigningConfig
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -15,16 +16,15 @@ import org.mockito.kotlin.verify
 
 internal class BundleToolServiceTest {
 
-    private val serviceDiscovery = mock<ServiceDiscovery> {
-        onBlocking { getAdbPath() } doReturn ADB_PATH
-        onBlocking { getBundletoolPath() } doReturn BUNDLETOOL_PATH
+    private val storage = mock<Storage> {
+        onBlocking { getServiceSettings() } doReturn Settings(ADB_PATH, BUNDLETOOL_PATH)
     }
 
     private val commandRunner = mock<CommandRunner> {
         onBlocking { run(any()) } doReturn ""
     }
 
-    private val bundleToolService = BundleToolService(serviceDiscovery, commandRunner)
+    private val bundleToolService = BundleToolService(storage, commandRunner)
 
     @Test
     fun installApks() {

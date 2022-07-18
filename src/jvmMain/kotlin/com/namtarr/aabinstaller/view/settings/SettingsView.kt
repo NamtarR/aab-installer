@@ -14,7 +14,7 @@ import dev.burnoo.cokoin.get
 @Composable
 @Preview
 fun SettingsView(viewModel: SettingsViewModel = get()) {
-    val state = viewModel.state.collectAsState().value
+    val state = viewModel.store.collectAsState().value
     val canSave = state.adbPath != null && state.bundletoolPath != null
 
     Column(modifier = Modifier.fillMaxHeight()) {

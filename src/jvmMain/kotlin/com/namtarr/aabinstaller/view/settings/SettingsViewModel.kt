@@ -1,48 +1,55 @@
 package com.namtarr.aabinstaller.view.settings
 
-import com.namtarr.aabinstaller.domain.data.ServiceDiscovery
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.update
+import com.namtarr.aabinstaller.domain.data.Storage
+import com.namtarr.aabinstaller.internal.ViewModel
+import com.namtarr.aabinstaller.model.Settings
+import com.namtarr.aabinstaller.utils.awaitNonNullValue
 import kotlinx.coroutines.launch
 
 class SettingsViewModel(
-    private val serviceDiscovery: ServiceDiscovery
-) {
+    private val storage: Storage
+): ViewModel() {
 
-    val state = MutableStateFlow(State())
-    val job = SupervisorJob()
-    val scope = CoroutineScope(Dispatchers.Default + job)
+    val store = Store(State(), ::reduce)
 
     init {
-        scope.launch {
-            state.value = State(
-                serviceDiscovery.getAdbPath(),
-                serviceDiscovery.getBundletoolPath()
+        viewModelScope.launch {
+            val settings = storage.getServiceSettings()
+            store.handleEvents(listOf(
+                Event.AdbPathEvent(settings.adbPath),
+                Event.BundletoolPathEvent(settings.bundletoolPath)
+            ))
+        }
+    }
+
+    private fun reduce(state: State, event: Event): State {
+        return when (event) {
+            is Event.AdbPathEvent -> state.copy(adbPath = event.path)
+            is Event.BundletoolPathEvent -> state.copy(bundletoolPath = event.path)
+        }
+    }
+
+    fun setAdbPath(path: String) = store.handleEvent(Event.AdbPathEvent(path))
+
+    fun setBundletoolPath(path: String) = store.handleEvent(Event.BundletoolPathEvent(path))
+
+    fun save() = viewModelScope.launch {
+        val state = store.awaitNonNullValue()
+        storage.saveServiceSettings(
+            Settings(
+                adbPath = state.adbPath,
+                bundletoolPath = state.bundletoolPath
             )
-        }
-    }
-
-    fun setAdbPath(path: String) {
-        state.update { it.copy(adbPath = path) }
-    }
-
-    fun setBundletoolPath(path: String) {
-        state.update { it.copy(bundletoolPath = path) }
-    }
-
-    fun save() {
-        val current = state.value
-
-        scope.launch {
-            serviceDiscovery.updatePaths(current.adbPath, current.bundletoolPath)
-        }
+        )
     }
 
     data class State(
         val adbPath: String? = null,
         val bundletoolPath: String? = null
     )
+
+    sealed interface Event {
+        class AdbPathEvent(val path: String?): Event
+        class BundletoolPathEvent(val path: String?): Event
+    }
 }

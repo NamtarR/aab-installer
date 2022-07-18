@@ -1,12 +1,12 @@
 package com.namtarr.aabinstaller.domain
 
 import com.namtarr.aabinstaller.domain.data.CommandRunner
-import com.namtarr.aabinstaller.domain.data.ServiceDiscovery
+import com.namtarr.aabinstaller.domain.data.Storage
 import com.namtarr.aabinstaller.model.Device
 import com.namtarr.aabinstaller.model.SigningConfig
 
 class BundleToolService(
-    private val discovery: ServiceDiscovery,
+    private val storage: Storage,
     private val runner: CommandRunner
 ) {
 
@@ -14,8 +14,9 @@ class BundleToolService(
     private fun pass(name: String, value: String) = "--$name=pass:$value"
 
     suspend fun buildApks(aabPath: String, signingConfig: SigningConfig, device: Device?): String {
-        val bundleTool = discovery.getBundletoolPath() ?: throw IllegalStateException("Bundletool is not found")
-        val adb = discovery.getAdbPath() ?: throw IllegalStateException("Adb is not found")
+        val settings = storage.getServiceSettings()
+        val bundleTool = settings.bundletoolPath ?: throw IllegalStateException("Bundletool is not found")
+        val adb = settings.adbPath ?: throw IllegalStateException("Adb is not found")
 
         val output = aabPath.replace(".aab", ".apks")
         val command = listOfNotNull(
@@ -44,8 +45,10 @@ class BundleToolService(
     }
 
     suspend fun installApks(apksPath: String, device: Device) {
-        val bundleTool = discovery.getBundletoolPath() ?: throw IllegalStateException("Bundletool is not found")
-        val adb = discovery.getAdbPath() ?: throw IllegalStateException("Adb is not found")
+        val settings = storage.getServiceSettings()
+        val bundleTool = settings.bundletoolPath ?: throw IllegalStateException("Bundletool is not found")
+        val adb = settings.adbPath ?: throw IllegalStateException("Adb is not found")
+
         val command = listOfNotNull(
             JAVA_JAR,
             bundleTool,
@@ -74,7 +77,6 @@ class BundleToolService(
         private const val KS_KEY_PASS = "key-pass"
 
         private const val DEVICE_ID = "device-id"
-        private const val DEVICE_SPEC = "device-spec"
         private const val DEVICE = "--connected-device"
 
         private const val ADB = "adb"

@@ -16,7 +16,13 @@ class SigningConfig(
     @SerialName("key_pass")
     val keyPass: String
 ) {
+
+    private val name = keystore.split(splitRegex).lastOrNull().orEmpty()
     override fun toString(): String {
-        return "$keystore: $keyAlias"
+        return "$name: $keyAlias"
+    }
+
+    companion object {
+        private val splitRegex = "[/\\\\]".toRegex()
     }
 }

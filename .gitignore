@@ -43,3 +43,4 @@ bin/
 *.apk
 *.jar
 *.jks
+*.json

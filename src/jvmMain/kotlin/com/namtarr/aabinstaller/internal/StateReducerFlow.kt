@@ -23,4 +23,6 @@ class StateReducerFlow<State, Event>(
     override val value = state.value
 
     fun handleEvent(event: Event) = events.trySend(event)
+
+    suspend fun handleEvents(list: List<Event>) = list.forEach { events.send(it) }
 }
