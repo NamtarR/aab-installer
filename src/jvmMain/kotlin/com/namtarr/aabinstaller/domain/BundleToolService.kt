@@ -3,6 +3,7 @@ package com.namtarr.aabinstaller.domain
 import com.namtarr.aabinstaller.domain.data.CommandRunner
 import com.namtarr.aabinstaller.domain.data.Storage
 import com.namtarr.aabinstaller.model.Device
+import com.namtarr.aabinstaller.model.Result
 import com.namtarr.aabinstaller.model.SigningConfig
 
 class BundleToolService(
@@ -13,10 +14,10 @@ class BundleToolService(
     private fun param(name: String, value: String?) = value?.let { "--$name=$it" }
     private fun pass(name: String, value: String) = "--$name=pass:$value"
 
-    suspend fun buildApks(aabPath: String, signingConfig: SigningConfig, device: Device?): String {
+    suspend fun buildApks(aabPath: String, signingConfig: SigningConfig, device: Device?): Result<String> {
         val settings = storage.getServiceSettings()
-        val bundleTool = settings.bundletoolPath ?: throw IllegalStateException("Bundletool is not found")
-        val adb = settings.adbPath ?: throw IllegalStateException("Adb is not found")
+        val bundleTool = settings.bundletoolPath ?: return Result.serviceFailure("Bundletool")
+        val adb = settings.adbPath ?: return Result.serviceFailure("ADB")
 
         val output = aabPath.replace(".aab", ".apks")
         val command = listOfNotNull(
@@ -39,12 +40,10 @@ class BundleToolService(
             param(ADB, adb).takeIf { device != null }
         ).joinToString(" ")
 
-        runner.run(command)
-
-        return output
+        return runner.run(command).map { output }
     }
 
-    suspend fun installApks(apksPath: String, device: Device) {
+    suspend fun installApks(apksPath: String, device: Device): Result<Unit> {
         val settings = storage.getServiceSettings()
         val bundleTool = settings.bundletoolPath ?: throw IllegalStateException("Bundletool is not found")
         val adb = settings.adbPath ?: throw IllegalStateException("Adb is not found")
@@ -58,7 +57,7 @@ class BundleToolService(
             param(ADB, adb)
         ).joinToString(" ")
 
-        runner.run(command)
+        return runner.run(command).map {  }
     }
 
     companion object {

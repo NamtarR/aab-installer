@@ -9,8 +9,4 @@ abstract class ViewModel {
     val viewModelJob = SupervisorJob()
     val viewModelScope = CoroutineScope(Dispatchers.Default + viewModelJob)
 
-    fun <State, Event> Store(
-        initialState: State,
-        reducer: (State, Event) -> State
-    ) = StateReducerFlow(initialState, reducer, viewModelScope)
 }
