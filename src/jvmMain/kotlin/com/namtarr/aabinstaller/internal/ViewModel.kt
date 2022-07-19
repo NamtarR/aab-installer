@@ -6,7 +6,7 @@ import kotlinx.coroutines.SupervisorJob
 
 abstract class ViewModel {
 
-    val viewModelJob = SupervisorJob()
+    private val viewModelJob = SupervisorJob()
     val viewModelScope = CoroutineScope(Dispatchers.Default + viewModelJob)
 
 }
