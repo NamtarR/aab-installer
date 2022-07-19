@@ -32,6 +32,8 @@ class BundleToolService(
             param(KS_KEY_ALIAS, signingConfig.keyAlias),
             pass(KS_KEY_PASS, signingConfig.keyPass),
 
+            OVERWRITE,
+
             UNIVERSAL.takeIf { device == null },
 
             DEVICE.takeIf { device != null },
@@ -80,5 +82,7 @@ class BundleToolService(
 
         private const val ADB = "adb"
         private const val UNIVERSAL = "--mode=universal"
+
+        private const val OVERWRITE = "--overwrite"
     }
 }

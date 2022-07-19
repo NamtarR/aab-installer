@@ -61,6 +61,7 @@ internal class BundleToolServiceTest {
                 "--ks-pass=pass:keystore-pass " +
                 "--ks-key-alias=key-alias " +
                 "--key-pass=pass:key-pass " +
+                "--overwrite " +
                 "--connected-device " +
                 "--device-id=987654321 " +
                 "--adb=/test/path/adb"
