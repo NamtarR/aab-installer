@@ -2,19 +2,30 @@ package com.namtarr.aabinstaller.domain
 
 import com.namtarr.aabinstaller.domain.data.CommandRunner
 import com.namtarr.aabinstaller.domain.data.Storage
+import com.namtarr.aabinstaller.domain.data.Unarchiver
 import com.namtarr.aabinstaller.model.Device
 import com.namtarr.aabinstaller.model.Result
 import com.namtarr.aabinstaller.model.SigningConfig
 
 class BundleToolService(
     private val storage: Storage,
-    private val runner: CommandRunner
+    private val runner: CommandRunner,
+    private val unarchiver: Unarchiver
 ) {
 
     private fun param(name: String, value: String?) = value?.let { "--$name=$it" }
     private fun pass(name: String, value: String) = "--$name=pass:$value"
 
-    suspend fun buildApks(aabPath: String, signingConfig: SigningConfig, device: Device?): Result<String> {
+    suspend fun build(aabPath: String, signingConfig: SigningConfig, device: Device?): Result<String> {
+        val apksResult = buildApks(aabPath, signingConfig, device)
+        return if (device != null) apksResult
+        else apksResult
+            .flatMap { path ->
+                unarchiver.getFileFromArchive(path, "universal.apk")
+            }
+    }
+
+    private suspend fun buildApks(aabPath: String, signingConfig: SigningConfig, device: Device?): Result<String> {
         val settings = storage.getServiceSettings()
         val bundleTool = settings.bundletoolPath ?: return Result.serviceFailure("Bundletool")
         val adb = settings.adbPath ?: return Result.serviceFailure("ADB")
@@ -45,10 +56,10 @@ class BundleToolService(
         return runner.run(command).map { output }
     }
 
-    suspend fun installApks(apksPath: String, device: Device): Result<Unit> {
+    suspend fun install(apksPath: String, device: Device): Result<Unit> {
         val settings = storage.getServiceSettings()
-        val bundleTool = settings.bundletoolPath ?: throw IllegalStateException("Bundletool is not found")
-        val adb = settings.adbPath ?: throw IllegalStateException("Adb is not found")
+        val bundleTool = settings.bundletoolPath ?: return Result.serviceFailure("Bundletool")
+        val adb = settings.adbPath ?: return Result.serviceFailure("ADB")
 
         val command = listOfNotNull(
             JAVA_JAR,

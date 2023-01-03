@@ -11,6 +11,7 @@ import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.unit.dp
 
@@ -45,7 +46,7 @@ fun <T> Spinner(
         DropdownMenu(
             expanded = isFocused.value,
             onDismissRequest = { focusManager.clearFocus() },
-            modifier = Modifier.width(width.dp)
+            modifier = Modifier.width((width / LocalDensity.current.density).dp)
         ) {
             data.forEachIndexed { index, entry ->
                 DropdownMenuItem(

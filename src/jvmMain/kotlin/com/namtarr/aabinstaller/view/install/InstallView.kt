@@ -112,7 +112,7 @@ fun InstallView(viewModel: InstallViewModel = get(), onAddNewConfig: () -> Unit)
                 }
                 TextButton(
                     colors = ButtonDefaults.buttonColors(backgroundColor = MaterialTheme.colors.secondary),
-                    onClick = { viewModel.buildInstall() },
+                    onClick = { viewModel.buildAndInstall() },
                     enabled = canBuild && canInstall,
                     modifier = Modifier.padding(start = 8.dp)
                 ) {

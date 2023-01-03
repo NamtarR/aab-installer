@@ -22,17 +22,21 @@ Furthermore, the idea seemed like the perfect opportunity to dive into [Compose]
 - Run AAB Installer and in the Settings tab set ADB and bundletool paths
 
   <img src="https://raw.githubusercontent.com/NamtarR/aab-installer/main/images/Settings.png" width="600" />
-- In the signing tab add a signing config for your app. You will have to have it in order to build an installable APK.
+  
 
+- In the signing tab add a signing config for your app. You will have to have it in order to build an installable APK. 
+It now supports environment variables in config fields. In order to use them surround variable name with double curly braces.
+For example, `{{AWESOME_KEYSTORE_PASSWORD}}`.
   <img src="https://raw.githubusercontent.com/NamtarR/aab-installer/main/images/Signing.png" width="600" />
-- In the Build tab select an AAB to install, select your device, signing config, and you are good to go!
+  
 
+- In the Build tab select an AAB to install, select your device, signing config, and you are good to go!
   <img src="https://raw.githubusercontent.com/NamtarR/aab-installer/main/images/Install.png" width="600" />
 
 #### What's next
-- Linux and MacOS versions _(They are probably fine but I just have to check that)_
-- Ability to use keystore and key passwords from environment variables
-- Universal APK mode
+- Linux and MacOS versions _(They are probably fine, but I just have to check that)_
+- ~~Ability to use keystore and key passwords from environment variables~~
+- ~~Universal APK mode~~
 - Automatic ADB and Bundletool paths discovery
 - Building using device specs
 
