@@ -45,7 +45,7 @@ fun <T> Spinner(
         DropdownMenu(
             expanded = isFocused.value,
             onDismissRequest = { focusManager.clearFocus() },
-            modifier = Modifier.width(width.dp)
+            modifier = Modifier.width(width.dp / 3 * 2) // it's a kind of magic
         ) {
             data.forEachIndexed { index, entry ->
                 DropdownMenuItem(
