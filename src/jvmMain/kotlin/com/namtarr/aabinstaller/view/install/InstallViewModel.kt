@@ -5,10 +5,10 @@ import com.namtarr.aabinstaller.domain.BundleToolService
 import com.namtarr.aabinstaller.domain.data.Storage
 import com.namtarr.aabinstaller.internal.Effect
 import com.namtarr.aabinstaller.internal.ViewModel
-import com.namtarr.aabinstaller.model.Device
 import com.namtarr.aabinstaller.model.Result
 import com.namtarr.aabinstaller.model.SigningConfig
 import com.namtarr.aabinstaller.utils.awaitNonNullValue
+import com.namtarr.aabinstaller.view.model.DeviceOption
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
@@ -30,7 +30,11 @@ class InstallViewModel(
 
     fun loadDevices() = viewModelScope.launch {
         adbService.getDevices().on { devices ->
-            store.update { it.copy(devices = devices) }
+            store.update { state ->
+                val deviceOptions = listOf(DeviceOption.Universal) + devices.map { DeviceOption.Real(it) }
+                val selected = state.selectedDevice.takeIf { it < deviceOptions.size } ?: 0
+                state.copy(devices = deviceOptions, selectedDevice = selected)
+            }
         }
     }
 
@@ -48,10 +52,10 @@ class InstallViewModel(
         store.update { it.copy(isLoading = true) }
         val state = store.awaitNonNullValue()
         bundleToolService
-            .buildApks(
+            .build(
                 aabPath = state.bundlePath,
                 signingConfig = state.signingConfigs[state.selectedSigningConfig],
-                device = state.devices.getOrNull(state.selectedDevice)
+                device = state.devices[state.selectedDevice].device
             )
             .on {
                 effects.trySend(Effect.OpenFileManager(it))
@@ -59,19 +63,20 @@ class InstallViewModel(
         store.update { it.copy(isLoading = false) }
     }
 
-    fun buildInstall() = viewModelScope.launch {
+    fun buildAndInstall() = viewModelScope.launch {
         store.update { it.copy(isLoading = true) }
         val state = store.awaitNonNullValue()
+        val device = state.devices[state.selectedDevice].device ?: return@launch
         bundleToolService
-            .buildApks(
+            .build(
                 aabPath = state.bundlePath,
                 signingConfig = state.signingConfigs[state.selectedSigningConfig],
-                device = state.devices[state.selectedDevice]
+                device = device
             )
-            .flatMap {
-                bundleToolService.installApks(
-                    apksPath = it,
-                    device = state.devices[state.selectedDevice]
+            .flatMap { path ->
+                bundleToolService.install(
+                    apksPath = path,
+                    device = device
                 )
             }
             .on {
@@ -81,7 +86,7 @@ class InstallViewModel(
     }
 
     data class State(
-        val devices: List<Device> = emptyList(),
+        val devices: List<DeviceOption> = emptyList(),
         val selectedDevice: Int = 0,
         val signingConfigs: List<SigningConfig> = emptyList(),
         val selectedSigningConfig: Int = 0,
