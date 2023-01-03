@@ -12,10 +12,13 @@ class CommandRunnerImpl(
     private val logger: CommandLogger
 ) : CommandRunner {
 
+    private val splitRegex = "\\s".toRegex()
+    private val envRegex = "\\{\\{\\S+}}".toRegex()
+
     override suspend fun run(command: String): Result<String> {
         return withContext(Dispatchers.IO) {
-            suspendCoroutine {
-                val parts = command.split("\\s".toRegex())
+            suspendCoroutine { continuation ->
+                val parts = command.split(splitRegex).map(::replaceEnvVarsIfNeeded)
                 val process = ProcessBuilder(*parts.toTypedArray())
                     .redirectOutput(ProcessBuilder.Redirect.PIPE)
                     .redirectError(ProcessBuilder.Redirect.PIPE)
@@ -25,14 +28,25 @@ class CommandRunnerImpl(
                 if (exitCode == 0) {
                     val result = process.inputStream.bufferedReader().readText()
                     logger.log(command, result)
-                    it.resume(Result.Success(result))
+                    continuation.resume(Result.Success(result))
                 }
                 else {
                     val result = process.errorStream.bufferedReader().readText()
                     logger.log(command, result)
-                    it.resume(Result.commandFailure(exitCode))
+                    continuation.resume(Result.commandFailure(exitCode))
                 }
             }
         }
+    }
+
+    private fun replaceEnvVarsIfNeeded(part: String): String? {
+        val matched = envRegex.find(part) ?: return part
+        val variable = System.getenv(
+            matched.value.removeSurrounding("{{", "}}")
+        )
+        if (variable.isNullOrBlank()) {
+            return null
+        }
+        return part.replace(envRegex, variable)
     }
 }
