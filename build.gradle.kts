@@ -1,4 +1,3 @@
-import org.jetbrains.compose.compose
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 
 plugins {
@@ -8,7 +7,7 @@ plugins {
 }
 
 group = "com.namtarr"
-version = "1.1.0"
+version = "1.1.1"
 
 repositories {
     google()
@@ -53,7 +52,7 @@ compose {
             nativeDistributions {
                 targetFormats(TargetFormat.Dmg, TargetFormat.Exe, TargetFormat.Deb)
                 packageName = "aab-installer"
-                packageVersion = "1.0.1"
+                packageVersion = "1.1.1"
             }
         }
     }
