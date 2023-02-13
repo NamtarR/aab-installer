@@ -5,7 +5,7 @@ AAB Installer simplifies this process using Google's [bundletool](https://develo
 
 Furthermore, the idea seemed like the perfect opportunity to dive into [Compose](https://www.jetbrains.com/ru-ru/lp/compose-mpp/), so this project also serves as a small playground.
 
-[![License](https://img.shields.io/badge/License-MIT-blue.svg)](https://github.com/NamtarR/aab-installer/blob/master/LICENSE.md)
+[![License](https://img.shields.io/badge/License-MIT-blue.svg)](https://github.com/NamtarR/aab-installer/blob/master/LICENSE)
 
 #### What you can do with this app
 
